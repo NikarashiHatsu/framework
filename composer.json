@@ -1,0 +1,19 @@
+{
+    "name": "shiroyuki/shiroyuki",
+    "description": "A framework created by me and used for personal project.",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "NikarashiHatsu",
+            "email": "yourlovelydev@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Shiroyuki\\": "src/",
+            "App\\": "app/"
+        }
+    },
+    "require": {}
+}
