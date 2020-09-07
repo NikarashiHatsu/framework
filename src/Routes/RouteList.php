@@ -8,12 +8,7 @@ trait RouteList {
    * 
    * @var array
    */
-  public $httpRoutes = [
-    'GET' => [],
-    'POST' => [],
-    'PUT' => [],
-    'DELETE' => [],
-  ];
+  public $httpRoutes = [];
 
   /**
    * Defined API Routes
