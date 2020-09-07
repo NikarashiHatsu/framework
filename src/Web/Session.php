@@ -4,16 +4,6 @@ namespace Shiroyuki\Web;
 
 trait Session {
   /**
-   * Set the sessions.
-   * 
-   * @return void
-   */
-  public function __construct()
-  {
-    $this->boot();
-  }
-
-  /**
    * Return this class.
    * 
    * @return object
@@ -21,19 +11,6 @@ trait Session {
   public function session()
   {
     return $this;
-  }
-
-  /**
-   * Set initial session
-   */
-  private function boot()
-  {
-    echo json_encode($_SESSION);
-    // if(count(self::$flashed) > 0) {
-    //   echo "Yes";
-    // } else {
-    //   echo "No";
-    // }
   }
 
   /**
