@@ -58,15 +58,15 @@ trait Redirection {
    * @param array $message
    * @return object
    */
-  public function with(...$message)
+  public function with()
   {
-    $parsed = $message;
+    $message = func_get_args();
 
     if(func_num_args() == 2) {
-      return $this->set($parsed[0], $parsed[1]);
+      return $this->set($message[0], $message[1]);
     }
 
-    return $this->set($parsed[0]);
+    return $this->set($message[0]);
   }
 
   /**

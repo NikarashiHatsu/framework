@@ -56,21 +56,20 @@ trait Session {
    * @param string|array
    * @return void|object
    */
-  public function set(...$data)
+  public function set()
   {
-    $parsed = $data;
+    $data = func_get_args();
     
     // If the arguments passed are 'key', 'value'
     if(func_num_args() == 2) {
-      $key = $parsed[0];
-      $value = $parsed[1];
+      $key = $data[0];
+      $value = $data[1];
 
       $_SESSION[$key] = $value;
     } else {
-      
       // If the arguments passed are 'array'
-      if(is_array($parsed)) {
-        $array = $parsed[0];
+      if(is_array($data)) {
+        $array = $data[0];
   
         foreach($array as $key => $value) {
           $_SESSION[$key] = $value;

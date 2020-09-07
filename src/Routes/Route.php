@@ -124,17 +124,27 @@ class Route {
    * @param mixed|null $args
    * @return void
    */
-  public function useController($controller, ...$args)
+  public function useController()
   {
+    $args = func_get_args();
+    
+    // First args is always used as Controller
+    $controller = $args[0];
     $real_controller = explode('@', $controller);
     
+    // Other args
+    $other_args = [];
+    for($i = 1; $i < count($args); $i++) {
+      array_push($other_args, $args[$i]);
+    }
+
     $class = '\App\Controller\\' . $real_controller[0];
     $object = new $class();
     $method = $real_controller[1];
     
-    if(is_array($args)) {
-      if(count($args) > 0) {
-        $object->$method($args[0]);
+    if(is_array($other_args)) {
+      if(count($other_args) > 0) {
+        $object->$method($other_args[0]);
       } else {
         $object->$method();
       }
