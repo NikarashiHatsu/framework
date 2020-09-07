@@ -22,6 +22,26 @@ class Route {
   }
 
   /**
+   * Fetch the route's arguments
+   */
+  private function fetch_route_args($route)
+  {
+    $arguments = [];
+    
+    // Fetch all the possible routing
+    preg_match_all('/\/[a-z]\w+|\/[\{a-z]\w+\}/', $route, $possible_routes);
+
+    // Search for the position of the argument
+    foreach($possible_routes[0] as $key => $item) {
+      if(preg_match('/\/[\{a-z]\w+\}/', $item)) {
+        array_push($arguments, ['position' => $key, 'argument' => $item]);
+      }
+    }
+
+    return $arguments;
+  }
+
+  /**
    * Add route to GET header list.
    * 
    * @param string $route
@@ -30,7 +50,14 @@ class Route {
    */
   public function get($route, $controller)
   {
-    array_push($this->httpRoutes['GET'], [$route => $controller]);
+    $args = $this->fetch_route_args($route);
+
+    array_push($this->httpRoutes, [
+      'request_method' => 'GET', 
+      'route' => $route,
+      'controller' => $controller,
+      'args' => $args
+    ]);
   }
 
   /**
@@ -42,7 +69,14 @@ class Route {
    */
   public function post($route, $controller)
   {
-    array_push($this->httpRoutes['POST'], [$route => $controller]);
+    $args = $this->fetch_route_args($route);
+    
+    array_push($this->httpRoutes, [
+      'request_method' => 'POST', 
+      'route' => $route,
+      'controller' => $controller,
+      'args' => $args
+    ]);
   }
 
   /**
@@ -54,7 +88,14 @@ class Route {
    */
   public function put($route, $controller)
   {
-    array_push($this->httpRoutes['PUT'], [$route => $controller]);
+    $args = $this->fetch_route_args($route);
+    
+    array_push($this->httpRoutes, [
+      'request_method' => 'PUT', 
+      'route' => $route,
+      'controller' => $controller,
+      'args' => $args
+    ]);
   }
 
   /**
@@ -66,24 +107,38 @@ class Route {
    */
   public function delete($route, $controller)
   {
-    array_push($this->httpRoutes['DELETE'], [$route => $controller]);
+    $args = $this->fetch_route_args($route);
+    
+    array_push($this->httpRoutes, [
+      'request_method' => 'DELETE', 
+      'route' => $route,
+      'controller' => $controller,
+      'args' => $args
+    ]);
   }
 
   /**
    * Use up the controller
    * 
    * @param string $controller
+   * @param mixed|null $args
    * @return void
    */
-  public function useController($controller)
+  public function useController($controller, ...$args)
   {
     $real_controller = explode('@', $controller);
     
     $class = '\App\Controller\\' . $real_controller[0];
+    $object = new $class();
     $method = $real_controller[1];
     
-    $object = new $class();
-    $object->$method();
+    if(is_array($args)) {
+      if(count($args) > 0) {
+        $object->$method($args[0]);
+      } else {
+        $object->$method();
+      }
+    }
   }
 
   /**
@@ -121,24 +176,89 @@ class Route {
    */
   public function __destruct()
   {
-    $uri = $this->requestUri;
-    $supported_request = ['GET', 'POST', 'PUT', 'DELETE'];
-    $routes = $this->httpRoutes;
+    $uri = ($this->requestUri != '/' ? rtrim($this->requestUri, '/') : $this->requestUri);
+    $valid_routes = [];
+    $invalid_routes = [];
 
-    for($i = 0; $i < count($routes); $i++) {
-      $the_route = $routes[$supported_request[$i]];
-      
-      for($j = 0; $j < count($the_route); $j++) {
-        if(array_key_exists($uri, $the_route[$j])) {
-          if($supported_request[$i] == $this->requestMethod) {
-            return $this->useController($the_route[$j][$uri]);
-          } else {
-            return $this->throwAbort(405);
+    // Set the valid routes
+    foreach($this->httpRoutes as $route) {
+      if($this->requestMethod === $route['request_method']) {
+        array_push($valid_routes, $route);
+      } else {
+        array_push($invalid_routes, $route);
+      }
+    }
+
+    // Single leveled
+    foreach($invalid_routes as $route) {
+      if($uri === $route['route']) {
+        return $this->throwAbort(405);
+      }
+    }
+
+    // Check the invalid routes first
+    foreach($invalid_routes as $route) {
+      // Multi leveled
+      if($uri !== '/') {
+        $args = $route['args'];
+        $exploded_uri = explode('/', trim($uri, '/'));
+        $exploded_route = explode('/', trim($route['route'], '/'));
+
+        foreach($args as $arg) {
+          preg_match('/(\{[a-z]\w+\})/', $exploded_route[$arg['position']], $regd_route);
+          if(count($regd_route) > 0) {
+            $exploded_route[$arg['position']] = '/(.*)';
+            $exploded_uri[$arg['position']] = '/(.*)';
+          }
+        }
+  
+        $imploded_uri = implode('/', $exploded_uri);
+        $imploded_route = implode('/', $exploded_route);
+  
+        if($imploded_uri === $imploded_route) {
+          // Pass the delete
+          return $this->throwAbort(405);
+        }
+      }
+    }
+
+    // Single leveled
+    foreach($valid_routes as $route) {
+      if($uri === $route['route']) {
+        return $this->useController($route['controller']);
+      }
+    }
+
+    // Check the valid routes
+    foreach($valid_routes as $route) {
+      // Multi leveled
+      if($uri !== '/') {
+        $args = $route['args'];
+        $exploded_uri = explode('/', trim($uri, '/'));
+        $exploded_route = explode('/', trim($route['route'], '/'));
+        $args_to_pass = [];
+
+        foreach($args as $arg) {
+          preg_match('/(\{[a-z]\w+\})/', $exploded_route[$arg['position']], $regd_route);
+          if(count($regd_route) > 0) {
+            array_push($args_to_pass, $exploded_uri[$arg['position']]);
+
+            $exploded_route[$arg['position']] = '/(.*)';
+            $exploded_uri[$arg['position']] = '/(.*)';
+          }
+        }
+  
+        $imploded_uri = implode('/', $exploded_uri);
+        $imploded_route = implode('/', $exploded_route);
+  
+        if($imploded_uri === $imploded_route) {
+          if(count($args_to_pass) > 0) {
+            return $this->useController($route['controller'], $args_to_pass);
           }
         }
       }
     }
-    
+
     $this->throwAbort(404);
   }
 }
