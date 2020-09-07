@@ -178,15 +178,21 @@ trait QueryBuilder {
     $stmt = $db->prepare($this->query);
     $stmt->execute();
 
-    $result = $stmt->get_result();
-    $stmt->close();
-
-    $final = [];
-
-    while($row = $result->fetch_assoc()) {
-      array_push($final, (object) $row);
+    if($this->insertIntoColumns == "" && $this->insertIntoValues == "") {
+      // SELECT
+      $result = $stmt->get_result();
+      $stmt->close();
+  
+      $final = [];
+  
+      while($row = $result->fetch_assoc()) {
+        array_push($final, (object) $row);
+      }
+  
+      return $this->result = $final;
+    } else {
+      // INSERT INTO
+      return $stmt;
     }
-
-    return $this->result = $final;
   }
 }
