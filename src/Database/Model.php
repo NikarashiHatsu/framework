@@ -130,6 +130,8 @@ abstract class Model extends Connection {
 
   /**
    * Save the data to the database.
+   * 
+   * @return bool
    */
   public function save()
   {
@@ -145,6 +147,9 @@ abstract class Model extends Connection {
     $this->buildInsert($columns);
     $this->buildInsertValues($values);
     $this->buildQuery();
-    // $this->runQuery();
+
+    $errno = $this->runQuery()->errno;
+
+    return !$errno;
   }
 }

@@ -3,8 +3,14 @@
 namespace Shiroyuki\Controller;
 
 use Shiroyuki\View\View;
+use Shiroyuki\View\Redirection;
 
 trait Controller {
+  /**
+   * Use all the traits
+   */
+  use Redirection;
+  
   /**
    * A function to show the index of a module.
    * 
