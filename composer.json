@@ -1,0 +1,19 @@
+{
+    "name": "hatsushiroyuki/shiroyuki-framework",
+    "description": "A framework for native PHP",
+    "type": "library",
+    "authors": [
+        {
+            "name": "NikarashiHatsu",
+            "email": "yourlovelydev@gmail.com"
+        }
+    ],
+    "require": {
+        "vlucas/phpdotenv": "^5.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Shiroyuki\\": "src/"
+        }
+    }
+}
