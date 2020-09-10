@@ -1,7 +1,8 @@
 {
-    "name": "hatsushiroyuki/shiroyuki-framework",
-    "description": "A framework for native PHP",
-    "type": "library",
+    "name": "shiroyuki/shiroyuki",
+    "description": "A framework created by me and used for personal project.",
+    "type": "project",
+    "license": "MIT",
     "authors": [
         {
             "name": "NikarashiHatsu",

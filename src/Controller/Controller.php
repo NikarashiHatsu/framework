@@ -80,12 +80,8 @@ trait Controller {
    * @param string $page
    * @return void
    */
-  public function view($page, $session = [])
+  public function view($page)
   {
-    if(count($session) > 0) {
-      $this->session()->set($session);
-    }
-
     $view = new View;
     $view->view($page);
   }
